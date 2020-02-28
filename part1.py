@@ -8,9 +8,21 @@ import praw
 import tkinter as tk
 import time
 
+class timeOut:
+    
+    def __init__(self):
+        self.timer = 100
+        
+    def setTimer(self, t):
+        self.timer = t
+
+    def getTimer(self):
+        return self.timer
+    
 class IncomingSubmissions(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
+        
         
         
 

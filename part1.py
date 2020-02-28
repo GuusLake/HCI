@@ -10,6 +10,8 @@ import time
 
 class IncomingSubmissions(tk.Frame):
     def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        
         
 
 def main():

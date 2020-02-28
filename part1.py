@@ -7,24 +7,47 @@
 import praw
 import tkinter as tk
 import time
+import queue
 
-class timeOut:
+class updateTimer:
     
     def __init__(self):
-        self.timer = 100
-        
+        self.timer = 10
+        self.paused = False
+
     def setTimer(self, t):
         self.timer = t
 
     def getTimer(self):
         return self.timer
     
+    def pause(self):
+        self.paused = True
+    
+    def play(self):
+        self.paused = False
+        
+    def checkPause(self):
+        return self.paused
+        
+def updateLoop(timer, reddit):
+    
+    while(1):
+        if (not(timer.checkPause())):
+            # ADD reddit posts
+            time.sleep(timer.getTimer())
+            
+
 class IncomingSubmissions(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        
-        
-        
+        self.topframe = tk.Frame(self)
+        self.time_slider = tk.Scale(self.topframe, from_=1, to=60)
+        self.time_slider.set(10)
+        self.btn = tk.Button(self.topframe, text='Play/Pause')
+        self.topframe.pack()
+    
+    
 
 def main():
     reddit = praw.Reddit(client_id='DgNtrLuFrdzL5Q',
@@ -34,8 +57,12 @@ def main():
                          password = 'Groningen2020'
                          )
     
-    root = tk.Tk()
+    loadQueue = queue.Queue(maxsize = 10)
     
+    root = tk.Tk()
+    st = IncomingSubmissions(root)
+    st.pack()
+    root.mainloop()
 
 if __name__ == "__main__":
     main()

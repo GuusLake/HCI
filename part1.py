@@ -43,7 +43,6 @@ def checkSubreddits(reddit, subredditList):
 
     '''
     for subreddit in subredditList:
-        exists = True
         try:
             # Try to do a subreddit exact search
             reddit.subreddits.search_by_name(subreddit, exact=True)

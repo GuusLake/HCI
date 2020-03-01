@@ -6,6 +6,7 @@
 
 import praw
 import tkinter as tk
+from tkinter import filedialog
 from tkinter import ttk
 import time
 import threading
@@ -45,6 +46,12 @@ class IncomingSubmissions(tk.Frame):
         self.queue = q
         self.tree = ttk.Treeview(self, columns=('title'))
         self.tree.pack()
+        self.menubar = tk.Menu(self)
+        self.filemenu = tk.Menu(self.menubar, tearoff=0)
+        self.filemenu.add_command(label="Load Whitelist")
+        self.filemenu.add_command(label="Load Blacklist")
+        self.menubar.add_cascade(label="File", menu=self.filemenu)
+        parent.config(menu=self.menubar)
         self.paused = False
         self.button = tk.Button(self, text = "PAUSE/RESUME", command = self.pause)
         self.button.pack()

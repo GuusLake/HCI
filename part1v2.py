@@ -43,7 +43,8 @@ class IncomingSubmissions(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.reddit = reddit
         self.queue = q
-        self.tree = ttk.Treeview(self, columns=('subreddit', 'title'))
+        self.tree = ttk.Treeview(self, columns=('title'))
+        self.tree.pack()
         self.paused = False
         self.button = tk.Button(self, text = "PAUSE/RESUME", command = self.pause)
         self.button.pack()
@@ -58,9 +59,9 @@ class IncomingSubmissions(tk.Frame):
             # print("Checking queue...")
             try:
                 # Do something with submissions, yeet them into treeview
-                newSubmission = self.queue.getNextItem()
-                print(newSubmission)
-            except queue.Empty: pass
+                [title, subreddit] = self.queue.getNextItem()
+                self.tree.insert('', 'end', text=title,values=(subreddit))
+            except: pass
         self.after(self.time_slider.get(), self.checkQueue)
         
     def pause(self):

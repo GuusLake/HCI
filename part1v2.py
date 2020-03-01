@@ -12,8 +12,23 @@ import time
 import threading
 import queue
 
+class RedditStream:
+    def __init__(self, sub, reddit, q):
+        self.subreddit = reddit.subreddit(sub)
+        self.queue = q
+        threading.Thread(target=self.redditLoop).start()
+        self.lastsubmission = None
+    
+    def redditLoop(self):
+        while True:
+            for submission in self.subreddit.new(limit=1):
+                if submission.fullname != self.lastsubmission:
+                    self.lastsubmission = submission.fullname
+                    self.queue.sendItem([submission.title, submission.subreddit.display_name])
+            time.sleep(0.001)
+
 class SubmissionQueue:
-    def __init__(self, maxsize =10):
+    def __init__(self, maxsize =100):
         self.myqueue=queue.Queue(maxsize)
 
     def sendItem(self,item):
@@ -47,7 +62,7 @@ class IncomingSubmissions(tk.Frame):
         
     def checkQueue(self):
         if not self.paused:
-            print("Checking queue...")
+            # print("Checking queue...")
             try:
                 # Do something with submissions, yeet them into treeview
                 newSubmission = self.queue.getNextItem()
@@ -95,6 +110,7 @@ def main():
     root = tk.Tk()
     
     queue = SubmissionQueue()
+    prod = RedditStream('all', reddit, queue)
     inc_subm = IncomingSubmissions(root, reddit, queue)
     inc_subm.pack()
     

@@ -30,6 +30,17 @@ class updateTimer:
     def checkPause(self):
         return self.paused
         
+def checkSubreddits(reddit, subredditList):
+    for subreddit in subredditList:
+        exists = True
+        try:
+            reddit.subreddits.search_by_name(subreddit, exact=True)
+        except:
+            return False
+    return True
+
+        
+
 def updateLoop(timer, reddit):
     
     while(1):

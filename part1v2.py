@@ -45,7 +45,7 @@ class IncomingSubmissions(tk.Frame):
         self.reddit = reddit
         self.queue = q
         self.tree = ttk.Treeview(self, columns=('title'))
-        self.tree.pack()
+        self.tree.pack(fill=tk.BOTH)
         self.menubar = tk.Menu(self)
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(label="Load Whitelist")
@@ -68,6 +68,7 @@ class IncomingSubmissions(tk.Frame):
                 # Do something with submissions, yeet them into treeview
                 [title, subreddit] = self.queue.getNextItem()
                 self.tree.insert('', 'end', text=title,values=(subreddit))
+                self.tree.yview_moveto(1)
             except: pass
         self.after(self.time_slider.get(), self.checkQueue)
         

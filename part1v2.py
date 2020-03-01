@@ -53,14 +53,14 @@ class IncomingSubmissions(tk.Frame):
         self.menubar.add_cascade(label="File", menu=self.filemenu)
         parent.config(menu=self.menubar)
         self.paused = False
-        self.button = tk.Button(self, text = "PAUSE/RESUME", command = self.pause)
+        self.button = tk.Button(self, text = "Pause", command = self.pause)
         self.button.pack()
         self.time_slider = tk.Scale(self, from_=1, to=60)
         self.time_slider.set(10)
         self.time_slider.pack()
         
         self.after(self.time_slider.get(), self.checkQueue)
-        
+    
     def checkQueue(self):
         if not self.paused:
             # print("Checking queue...")
@@ -75,8 +75,10 @@ class IncomingSubmissions(tk.Frame):
     def pause(self):
         if self.paused:
             self.paused = False
+            self.button.config(text='Pause')
         else:
             self.paused = True
+            self.button.config(text='Resume')
             
     def checkSubreddits(self, subredditList):
         '''

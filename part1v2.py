@@ -49,7 +49,7 @@ class IncomingSubmissions(tk.Frame):
         self.filemenu.add_command(label="Load Whitelist")
         self.filemenu.add_command(label="Load Blacklist")
         self.menubar.add_cascade(label="File", menu=self.filemenu)
-        self.config(menu=self.menubar)
+        parent.config(menu=self.menubar)
         self.tree = ttk.Treeview(self, columns=('subreddit', 'title'))
         self.paused = False
         self.button = tk.Button(self, text = "PAUSE/RESUME", command = self.pause)

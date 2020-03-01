@@ -31,14 +31,26 @@ class updateTimer:
         return self.paused
         
 def checkSubreddits(reddit, subredditList):
+    '''
+    Checks if the subreddits in the black or whitelist exist
+
+    Parameters:
+    reddit (obj): reddit object
+    subredditList (list): list of subreddits
+
+    Returns:
+    bool: True if all subreddits exist and False if not
+
+    '''
     for subreddit in subredditList:
         exists = True
         try:
+            # Try to do a subreddit exact search
             reddit.subreddits.search_by_name(subreddit, exact=True)
         except:
+            # If it fails return False
             return False
     return True
-
         
 
 def updateLoop(timer, reddit):

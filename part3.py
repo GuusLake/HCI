@@ -7,6 +7,7 @@
 import praw
 import tkinter as tk
 from tkinter import ttk
+from tkinter import simpledialog
 import time
 import queue
 import threading
@@ -16,6 +17,7 @@ from part2 import CommentTreeDisplay
 class ResponseCommentTreeDisplay(CommentTreeDisplay):
     def __init__(self, parent, reddit):
         CommentTreeDisplay.__init__(self, parent, reddit)
+        self.reddit = reddit
         print("Init complete")
         
     def attachTree(self):
@@ -29,7 +31,8 @@ class ResponseCommentTreeDisplay(CommentTreeDisplay):
     
     def addComment(self, event):
         print("Double Click Detected")
-        comment = reddit.comment(id = commentID)
+        item = self.commentTree.selection()[0]
+        comment = self.reddit.comment(id = item)
         reply = simpledialog.askstring(title = "Add comment", prompt = "Type your comment below:")
         comment.reply(reply)
         

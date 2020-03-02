@@ -46,7 +46,9 @@ class CommentTreeDisplay(tk.Frame):
             except:
                 self.newTree.insert('', 'end', comment.id, text="CHARACTER ERROR")
             self.recursiveTreeBuilder(comment, comment.id)
-            
+        self.attachTree()
+        
+    def attachTree(self):
         self.commentTree = self.newTree
         self.yscrollbarComment = ttk.Scrollbar(self, orient='vertical', command=self.commentTree.yview)
         self.commentTree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)

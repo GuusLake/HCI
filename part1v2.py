@@ -8,6 +8,7 @@ import praw
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
+from tkinter import messagebox
 import time
 import threading
 import queue
@@ -42,43 +43,89 @@ class SubmissionQueue:
 class IncomingSubmissions(tk.Frame):
     def __init__(self, parent, reddit, q):
         tk.Frame.__init__(self, parent)
+        
+        # Tree
+        self.columnconfigure(0, weight=1)
         self.reddit = reddit
         self.queue = q
         self.tree = ttk.Treeview(self, columns=('title'))
-        self.tree.pack(fill=tk.BOTH)
-        self.menubar = tk.Menu(self)
-        self.filemenu = tk.Menu(self.menubar, tearoff=0)
-        self.filemenu.add_command(label="Load Whitelist")
-        self.filemenu.add_command(label="Load Blacklist")
-        self.menubar.add_cascade(label="File", menu=self.filemenu)
-        parent.config(menu=self.menubar)
-        self.paused = False
-        self.button = tk.Button(self, text = "Pause", command = self.pause)
-        self.button.pack()
-        self.time_slider = tk.Scale(self, from_=1, to=60)
-        self.time_slider.set(10)
-        self.time_slider.pack()
+        self.yscrollbar = ttk.Scrollbar(self, orient='vertical', command=self.tree.yview)
+        self.tree.configure(yscrollcommand=self.yscrollbar.set)
+        self.yscrollbar.grid(row=0, column=2, sticky='nse')
+        self.tree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
         
-        self.after(self.time_slider.get(), self.checkQueue)
+        # Time slider and play/pause
+        self.paused = False
+        self.time_slider = tk.Scale(self, from_=1, to=60, orient='horizontal')
+        self.time_slider.set(10)
+        self.time_slider.grid(column=0, row=1, columnspan=2, sticky = tk.NSEW)
+        self.buttonPause = tk.Button(self, text = "Pause", command = self.pause)
+        self.buttonPause.grid(column=2, row=1, sticky = tk.EW)
+        
+        # White/Blacklist
+        self.wbList = []
+        self.listType = 'Whitelist'
+        self.listString = tk.StringVar()
+        self.listEntry = tk.Entry(self, textvariable=self.listString)
+        self.listString.set("Enter subreddits to white/blacklist seperated by a comma")
+        self.listEntry.grid(column=0, row=2, sticky= tk.NSEW)
+        self.buttonListType = tk.Button(self, text = "Whitelist", command = self.changeListType)
+        self.buttonListType.grid(column=1, row=2, sticky = tk.EW)
+        self.buttonListSubmit = tk.Button(self, text = "Submit", command = self.changeListStart)
+        self.buttonListSubmit.grid(column=2, row=2, sticky = tk.EW)
+        
+        
+        
+        self.after(self.time_slider.get()*10, self.checkQueue)
     
     def checkQueue(self):
         if not self.paused:
             # print("Checking queue...")
             try:
-                # Do something with submissions, yeet them into treeview
+                # Do something with submissions, add them into treeview
                 [title, subreddit] = self.queue.getNextItem()
-                self.tree.insert('', 'end', text=title,values=(subreddit))
-                self.tree.yview_moveto(1)
+                if self.wbList:
+                    if (self.listType == 'Whitelist'):
+                        if (subreddit in self.wbList):
+                            self.tree.insert('', 'end', text=title,values=(subreddit))
+                            self.tree.yview_moveto(1)
+                    else:
+                        if (subreddit not in self.wbList):
+                            self.tree.insert('', 'end', text=title,values=(subreddit))
+                            self.tree.yview_moveto(1)
+                else:
+                    self.tree.insert('', 'end', text=title,values=(subreddit))
+                    self.tree.yview(1)
+                    
             except: pass
         self.after(self.time_slider.get(), self.checkQueue)
         
     def pause(self):
         if self.paused:
             self.paused = False
-            self.button.config(text='Pause')
+            self.buttonPause.config(text='Pause')
         else:
             self.paused = True
-            self.button.config(text='Resume')
+            self.buttonPause.config(text='Resume')
+            
+    def changeListType(self):
+        if (self.listType == 'Whitelist'):
+            self.buttonListType.config(text='Blacklist')
+        else:
+            self.buttonListType.config(text='Whitelist')
+            
+    def changeListStart(self):
+        threading.Thread(target=self.changeList).start()
+            
+    def changeList(self):
+        if self.listString.get():
+            self.wbListTest = self.listString.get().split(', ')
+            if (self.checkSubreddits(self.wbListTest)):
+                self.wbList = self.wbListTest
+                self.listType = self.buttonListType['text']
+        else:
+            self.wbList = []
+        
             
     def checkSubreddits(self, subredditList):
         '''
@@ -93,11 +140,14 @@ class IncomingSubmissions(tk.Frame):
 
         '''
         for subreddit in subredditList:
+            if not(subredditList):
+                return True
             try:
                 # Try to do a subreddit exact search
                 self.reddit.subreddits.search_by_name(subreddit, exact=True)
             except:
                 # If it fails return False
+                messagebox.showerror('Error', '{0} does not exist\nThe old '.format(subreddit))
                 return False
         return True
         

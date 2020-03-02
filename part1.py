@@ -85,6 +85,11 @@ def main():
     st = IncomingSubmissions(root)
     st.pack()
     root.mainloop()
+    self.menubar = tk.Menu(self)
+        self.filemenu = tk.Menu(self.menubar, tearoff=0)
+        self.filemenu.add_command(label="Load Whitelist")
+        self.filemenu.add_command(label="Load Blacklist")
+        self.menubar.add_cascade(label="File", menu=self.filemenu)
 
 if __name__ == "__main__":
     main()

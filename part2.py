@@ -7,10 +7,12 @@
 import praw
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 import time
 import queue
 import threading
 
+# https://www.reddit.com/r/AskReddit/comments/fca671/what_has_always_been_your_fun_fact_when_asked/
 
 class CommentTreeDisplay(tk.Frame):
     def __init__(self, parent, reddit):
@@ -32,12 +34,10 @@ class CommentTreeDisplay(tk.Frame):
         self.commentTree.configure(yscrollcommand=self.yscrollbarComment.set)
         self.yscrollbarComment.grid(row=0, column=0, sticky='nse')
         self.commentTree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
-        self.submisUrl = 'https://www.reddit.com/r/AskReddit/comments/fca671/what_has_always_been_your_fun_fact_when_asked/'
-        threading.Thread(target=self.showComments).start()
+        self.submisUrl = ''
     
     def showComments(self):
         self.newTree = ttk.Treeview(self)
-            
         submission = self.reddit.submission(url=self.submisUrl)
         submission.comments.replace_more(limit=0)
         for comment in submission.comments:
@@ -48,7 +48,10 @@ class CommentTreeDisplay(tk.Frame):
             self.recursiveTreeBuilder(comment, comment.id)
             
         self.commentTree = self.newTree
+        self.yscrollbarComment = ttk.Scrollbar(self, orient='vertical', command=self.commentTree.yview)
         self.commentTree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
+        self.yscrollbarComment.grid(row=0, column=0, sticky='nse')
+        self.commentTree.configure(yscrollcommand=self.yscrollbarComment.set)
             
     def recursiveTreeBuilder(self, parent, parent_id):
         for child in parent.replies:
@@ -69,7 +72,11 @@ class CommentTreeDisplay(tk.Frame):
     
     def loadComments(self):
         self.submisUrl = self.urlEntry.get()
-        threading.Thread(target=self.showComments).start()
+        try:
+            submission = self.reddit.submission(url=self.submisUrl)
+            threading.Thread(target=self.showComments).start()
+        except:
+            messagebox.showerror('Error', 'THe URL was invalid')
         self.win.destroy()
         
         

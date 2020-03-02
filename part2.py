@@ -26,19 +26,33 @@ class CommentTreeDisplay(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.reddit = reddit
         self.queue = q
+        
+        self.columnconfigure(0, weight=1)
         #self.entry = tk.Entry(self)
         #self.entry.pack(fill=tk.X, side="left", expand=True)
         #self.button = tk.Button(self,text = "Get Comments")
         #self.button.pack(side="right", fill=tk.X)
         
-        self.botframe = tk.Frame(self)
-        self.commentTree = ttk.Treeview(self.botframe)
-        self.vsb = tk.Scrollbar(self.botframe, orient="vertical",command=self.commentTree.yview)
-        self.vsb.pack(side="right", fill="y")
-        self.commentTree.pack(side="left", fill="both", expand=True)
-        self.botframe.pack() 
+        #self.botframe = tk.Frame(self)
+        self.commentTree = ttk.Treeview(self)
+        #self.vsb = tk.Scrollbar(self.botframe, orient="vertical",command=self.commentTree.yview)
+        #self.vsb.pack(side="right", fill="y")
+        self.commentTree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
+        #self.botframe.pack() 
+        self.showComments('https://www.reddit.com/r/AskReddit/comments/fca671/what_has_always_been_your_fun_fact_when_asked/', reddit)
+    
+    def showComments(self, url, reddit):
+        submission = reddit.submission(url=url)
+        submission.comments.replace_more(limit=0)
+        for comment in submission.comments:
+            self.commentTree.insert('', 'end', comment.id, text=comment.body)
+            self.recursiveTreeBuilder(comment, comment.id)
+            
         
-    def showComments(self, url):
+    def recursiveTreeBuilder(self, parent, parent_id):
+        for child in parent.replies:
+            self.commentTree.insert(parent_id, 'end', child.id, text=child.body)
+            self.recursiveTreeBuilder(child, child.id)
         
         
 
@@ -53,7 +67,7 @@ def main():
     root = tk.Tk()
     queue = CommentsQueue()
     ctd = CommentTreeDisplay(root, reddit, queue)
-    ctd.pack()
+    ctd.pack(fill=tk.BOTH, expand = True)
     
     root.mainloop()
 

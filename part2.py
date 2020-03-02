@@ -22,16 +22,17 @@ class CommentsQueue:
         return message
 
 class CommentTreeDisplay(tk.Frame):
-    def __init__(self, parent, reddit, q):
+    def __init__(self, parent, reddit, queue):
         tk.Frame.__init__(self, parent)
         self.reddit = reddit
-        self.queue = q
-        
         self.columnconfigure(0, weight=1)
-        #self.entry = tk.Entry(self)
-        #self.entry.pack(fill=tk.X, side="left", expand=True)
-        #self.button = tk.Button(self,text = "Get Comments")
-        #self.button.pack(side="right", fill=tk.X)
+        self.queue = queue
+        self.menubar = tk.Menu(self)
+        self.filemenu = tk.Menu(self.menubar, tearoff=0)
+        self.filemenu.add_command(label="Load comments", command=self.loadCommentsPopup)
+        self.filemenu.add_command(label="exit", command=self.quit)
+        self.menubar.add_cascade(label="File", menu=self.filemenu)
+        parent.config(menu=self.menubar)
         
         #self.botframe = tk.Frame(self)
         self.commentTree = ttk.Treeview(self)
@@ -48,11 +49,28 @@ class CommentTreeDisplay(tk.Frame):
             self.commentTree.insert('', 'end', comment.id, text=comment.body)
             self.recursiveTreeBuilder(comment, comment.id)
             
-        
     def recursiveTreeBuilder(self, parent, parent_id):
         for child in parent.replies:
             self.commentTree.insert(parent_id, 'end', child.id, text=child.body)
             self.recursiveTreeBuilder(child, child.id)
+            
+    def loadCommentsPopup(self):
+        self.win= tk.Toplevel(self)
+        self.label=tk.Label(self.win, text="Enter an URL")
+        self.label.pack()
+        self.submisUrl=tk.Entry(self.win)
+        self.submisUrl.pack()
+        self.btn=tk.Button(self.win,text='Load comments',command=self.loadComments)
+        self.btn.pack()
+    
+    def loadComments(self):
+        # ADD URL VARIABLE HERE INSTEAD OF VALUE
+        self.value=self.submisUrl.get()
+        # ADD OLD COMMENT TREE CLEANUP HERE
+        for node in self.commentTree.get_children():
+            self.commentTree.delete(node)
+        # ADD LOADING PROCEDURE HERE
+        self.win.destroy()
         
         
 

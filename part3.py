@@ -71,9 +71,17 @@ class CommentTreeDisplay(tk.Frame):
         self.submisUrl = self.urlEntry.get()
         threading.Thread(target=self.showComments).start()
         self.win.destroy()
-        
-        
 
+class ResponseCommentTreeDisplay(CommentTreeDisplay):
+    def __init__(self, parent, reddit, queue):
+        CommentTreeDisplay.__init__(self, parent, reddit, queue)
+        self.commentTree.bind("<Double-1>", self.addComment)
+    
+    def addComment(self, event):
+        comment = reddit.comment(id = commentID)
+        reply = simpledialog.askstring(title = "Add comment", prompt = "Type your comment below:")
+        comment.reply(reply)
+        
 def main():
     reddit = praw.Reddit(client_id='DgNtrLuFrdzL5Q',
                          client_secret='CJZQjr6En6GpsYOEFVPdWAwwW7w',

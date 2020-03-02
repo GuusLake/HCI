@@ -33,8 +33,11 @@ class ResponseCommentTreeDisplay(CommentTreeDisplay):
         print("Double Click Detected")
         item = self.commentTree.selection()[0]
         comment = self.reddit.comment(id = item)
-        reply = simpledialog.askstring(title = "Add comment", prompt = "Type your comment below:")
-        comment.reply(reply)
+        try:
+            reply = simpledialog.askstring(title = "Add comment", prompt = "Type your comment below:")
+            comment.reply(reply)
+        except:
+            print("Empty string detected!")
         
 def main():
     reddit = praw.Reddit(client_id='DgNtrLuFrdzL5Q',

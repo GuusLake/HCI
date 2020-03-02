@@ -48,7 +48,9 @@ class IncomingSubmissions(tk.Frame):
         self.columnconfigure(0, weight=1)
         self.reddit = reddit
         self.queue = q
-        self.tree = ttk.Treeview(self, columns=('title'))
+        self.tree = ttk.Treeview(self, columns=('Subreddit'))
+        self.tree.heading("#0", text="Title")
+        self.tree.heading("Subreddit", text="Subreddit")
         self.yscrollbar = ttk.Scrollbar(self, orient='vertical', command=self.tree.yview)
         self.tree.configure(yscrollcommand=self.yscrollbar.set)
         self.yscrollbar.grid(row=0, column=2, sticky='nse')
@@ -56,7 +58,7 @@ class IncomingSubmissions(tk.Frame):
         
         # Time slider and play/pause
         self.paused = False
-        self.time_slider = tk.Scale(self, from_=1, to=60, orient='horizontal')
+        self.time_slider = tk.Scale(self, from_=1, to=100, orient='horizontal', label='Select time between posts in 0.1 seconds')
         self.time_slider.set(10)
         self.time_slider.grid(column=0, row=1, columnspan=2, sticky = tk.NSEW)
         self.buttonPause = tk.Button(self, text = "Pause", command = self.pause)
@@ -67,7 +69,7 @@ class IncomingSubmissions(tk.Frame):
         self.listType = 'Whitelist'
         self.listString = tk.StringVar()
         self.listEntry = tk.Entry(self, textvariable=self.listString)
-        self.listString.set("Enter subreddits to white/blacklist seperated by a comma")
+        self.listString.set("Example, List, Input")
         self.listEntry.grid(column=0, row=2, sticky= tk.NSEW)
         self.buttonListType = tk.Button(self, text = "Whitelist", command = self.changeListType)
         self.buttonListType.grid(column=1, row=2, sticky = tk.EW)
@@ -76,7 +78,7 @@ class IncomingSubmissions(tk.Frame):
         
         
         
-        self.after(self.time_slider.get()*10, self.checkQueue)
+        self.after(self.time_slider.get()*100, self.checkQueue)
     
     def checkQueue(self):
         if not self.paused:
@@ -95,10 +97,10 @@ class IncomingSubmissions(tk.Frame):
                             self.tree.yview_moveto(1)
                 else:
                     self.tree.insert('', 'end', text=title,values=(subreddit))
-                    self.tree.yview(1)
+                    self.tree.yview_moveto(1)
                     
             except: pass
-        self.after(self.time_slider.get(), self.checkQueue)
+        self.after(self.time_slider.get()*100, self.checkQueue)
         
     def pause(self):
         if self.paused:
@@ -166,7 +168,7 @@ def main():
     queue = SubmissionQueue()
     prod = RedditStream('all', reddit, queue)
     inc_subm = IncomingSubmissions(root, reddit, queue)
-    inc_subm.pack()
+    inc_subm.pack(fill=tk.BOTH, expand = True)
     
     root.mainloop()
     

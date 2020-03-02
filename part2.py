@@ -38,9 +38,8 @@ class CommentTreeDisplay(tk.Frame):
     
     def showComments(self):
         self.newTree = ttk.Treeview(self)
-        submission = self.reddit.submission(url=self.submisUrl)
-        submission.comments.replace_more(limit=0)
-        for comment in submission.comments:
+        self.submission.comments.replace_more(limit=0)
+        for comment in self.submission.comments:
             try:
                 self.newTree.insert('', 'end', comment.id, text=comment.body)
             except:
@@ -75,10 +74,10 @@ class CommentTreeDisplay(tk.Frame):
     def loadComments(self):
         self.submisUrl = self.urlEntry.get()
         try:
-            submission = self.reddit.submission(url=self.submisUrl)
+            self.submission = self.reddit.submission(url=self.submisUrl)
             threading.Thread(target=self.showComments).start()
         except:
-            messagebox.showerror('Error', 'THe URL was invalid')
+            messagebox.showerror('Error', 'The URL was invalid')
         self.win.destroy()
         
         

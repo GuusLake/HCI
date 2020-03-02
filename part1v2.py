@@ -46,6 +46,7 @@ class IncomingSubmissions(tk.Frame):
         
         # Tree
         self.columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
         self.reddit = reddit
         self.queue = q
         self.tree = ttk.Treeview(self, columns=('Subreddit'))
@@ -56,13 +57,14 @@ class IncomingSubmissions(tk.Frame):
         self.yscrollbar.grid(row=0, column=2, sticky='nse')
         self.tree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
         
+        
         # Time slider and play/pause
         self.paused = False
         self.time_slider = tk.Scale(self, from_=1, to=100, orient='horizontal', label='Select time between posts in 0.1 seconds')
         self.time_slider.set(10)
         self.time_slider.grid(column=0, row=1, columnspan=2, sticky = tk.NSEW)
         self.buttonPause = tk.Button(self, text = "Pause", command = self.pause)
-        self.buttonPause.grid(column=2, row=1, sticky = tk.EW)
+        self.buttonPause.grid(column=2, row=1, sticky = 'sew')
         
         # White/Blacklist
         self.wbList = []
@@ -72,9 +74,9 @@ class IncomingSubmissions(tk.Frame):
         self.listString.set("Example, List, Input")
         self.listEntry.grid(column=0, row=2, sticky= tk.NSEW)
         self.buttonListType = tk.Button(self, text = "Whitelist", command = self.changeListType)
-        self.buttonListType.grid(column=1, row=2, sticky = tk.EW)
+        self.buttonListType.grid(column=1, row=2, sticky = 'sew')
         self.buttonListSubmit = tk.Button(self, text = "Submit", command = self.changeListStart)
-        self.buttonListSubmit.grid(column=2, row=2, sticky = tk.EW)
+        self.buttonListSubmit.grid(column=2, row=2, sticky = 'sew')
         
         
         
@@ -164,6 +166,7 @@ def main():
                          )
     
     root = tk.Tk()
+    root.attributes('-zoomed', True)
     
     queue = SubmissionQueue()
     prod = RedditStream('all', reddit, queue)

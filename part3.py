@@ -20,7 +20,10 @@ class ResponseCommentTreeDisplay(CommentTreeDisplay):
         
     def attachTree(self):
         self.commentTree = self.newTree
+        self.yscrollbarComment = ttk.Scrollbar(self, orient='vertical', command=self.commentTree.yview)
         self.commentTree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
+        self.yscrollbarComment.grid(row=0, column=0, sticky='nse')
+        self.commentTree.configure(yscrollcommand=self.yscrollbarComment.set)
         self.commentTree.bind("<Double-1>", self.addComment)
         print("Attached Event")
     

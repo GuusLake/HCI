@@ -9,17 +9,8 @@ import tkinter as tk
 from tkinter import ttk
 import time
 import queue
+import threading
 
-class CommentsQueue:
-    def __init__(self, maxsize =10):
-        self.myqueue=queue.Queue(maxsize)
-
-    def sendItem(self,item):
-        self.myqueue.put(item, block=True)
-
-    def getNextItem(self):
-        message=self.myqueue.get(block=False)
-        return message
 
 class CommentTreeDisplay(tk.Frame):
     def __init__(self, parent, reddit, queue):
@@ -40,36 +31,47 @@ class CommentTreeDisplay(tk.Frame):
         #self.vsb.pack(side="right", fill="y")
         self.commentTree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
         #self.botframe.pack() 
-        self.showComments('https://www.reddit.com/r/AskReddit/comments/fca671/what_has_always_been_your_fun_fact_when_asked/', reddit)
+        self.submisUrl = 'https://www.reddit.com/r/AskReddit/comments/fca671/what_has_always_been_your_fun_fact_when_asked/'
+        threading.Thread(target=self.showComments).start()
     
-    def showComments(self, url, reddit):
-        submission = reddit.submission(url=url)
+    def showComments(self):
+        self.newTree = ttk.Treeview(self)
+            
+        submission = self.reddit.submission(url=self.submisUrl)
         submission.comments.replace_more(limit=0)
         for comment in submission.comments:
-            self.commentTree.insert('', 'end', comment.id, text=comment.body)
+            try:
+                self.newTree.insert('', 'end', comment.id, text=comment.body)
+            except:
+                self.newTree.insert('', 'end', comment.id, text="CHARACTER ERROR")
             self.recursiveTreeBuilder(comment, comment.id)
+            
+        self.commentTree = self.newTree
+        self.commentTree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
             
     def recursiveTreeBuilder(self, parent, parent_id):
         for child in parent.replies:
-            self.commentTree.insert(parent_id, 'end', child.id, text=child.body)
+            try:
+                self.newTree.insert(parent_id, 'end', child.id, text=child.body)
+            except:
+                self.newTree.insert(parent_id, 'end', child.id, text="CHARACTER ERROR")
             self.recursiveTreeBuilder(child, child.id)
             
     def loadCommentsPopup(self):
         self.win= tk.Toplevel(self)
         self.label=tk.Label(self.win, text="Enter an URL")
         self.label.pack()
-        self.submisUrl=tk.Entry(self.win)
-        self.submisUrl.pack()
+        self.urlEntry=tk.Entry(self.win)
+        self.urlEntry.pack()
         self.btn=tk.Button(self.win,text='Load comments',command=self.loadComments)
         self.btn.pack()
     
     def loadComments(self):
         # ADD URL VARIABLE HERE INSTEAD OF VALUE
-        self.value=self.submisUrl.get()
         # ADD OLD COMMENT TREE CLEANUP HERE
-        for node in self.commentTree.get_children():
-            self.commentTree.delete(node)
         # ADD LOADING PROCEDURE HERE
+        self.submisUrl = self.urlEntry.get()
+        threading.Thread(target=self.showComments).start()
         self.win.destroy()
         
         

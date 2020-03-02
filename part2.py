@@ -18,6 +18,8 @@ class CommentTreeDisplay(tk.Frame):
         self.reddit = reddit
         self.columnconfigure(0, weight=1)
         self.queue = queue
+        
+        # Make menubar
         self.menubar = tk.Menu(self)
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(label="Load comments", command=self.loadCommentsPopup)
@@ -25,14 +27,15 @@ class CommentTreeDisplay(tk.Frame):
         self.menubar.add_cascade(label="File", menu=self.filemenu)
         parent.config(menu=self.menubar)
         
-        #self.botframe = tk.Frame(self)
+        # Create comment tree
         self.commentTree = ttk.Treeview(self)
-        #self.vsb = tk.Scrollbar(self.botframe, orient="vertical",command=self.commentTree.yview)
-        #self.vsb.pack(side="right", fill="y")
         self.commentTree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
-        #self.botframe.pack() 
         self.submisUrl = 'https://www.reddit.com/r/AskReddit/comments/fca671/what_has_always_been_your_fun_fact_when_asked/'
         threading.Thread(target=self.showComments).start()
+        self.yscrollbarComment = ttk.Scrollbar(self, orient='vertical', command=self.commentTree.yview)
+        self.commentTree.configure(yscrollcommand=self.yscrollbarComment.set)
+        self.yscrollbarComment.grid(row=0, column=0, sticky='nse')
+        self.showComments('https://www.reddit.com/r/AskReddit/comments/fca671/what_has_always_been_your_fun_fact_when_asked/', reddit)
     
     def showComments(self):
         self.newTree = ttk.Treeview(self)

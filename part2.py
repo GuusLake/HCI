@@ -13,11 +13,10 @@ import threading
 
 
 class CommentTreeDisplay(tk.Frame):
-    def __init__(self, parent, reddit, queue):
+    def __init__(self, parent, reddit):
         tk.Frame.__init__(self, parent)
         self.reddit = reddit
         self.columnconfigure(0, weight=1)
-        self.queue = queue
         
         # Make menubar
         self.menubar = tk.Menu(self)
@@ -29,13 +28,12 @@ class CommentTreeDisplay(tk.Frame):
         
         # Create comment tree
         self.commentTree = ttk.Treeview(self)
-        self.commentTree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
-        self.submisUrl = 'https://www.reddit.com/r/AskReddit/comments/fca671/what_has_always_been_your_fun_fact_when_asked/'
-        threading.Thread(target=self.showComments).start()
         self.yscrollbarComment = ttk.Scrollbar(self, orient='vertical', command=self.commentTree.yview)
         self.commentTree.configure(yscrollcommand=self.yscrollbarComment.set)
         self.yscrollbarComment.grid(row=0, column=0, sticky='nse')
-        self.showComments('https://www.reddit.com/r/AskReddit/comments/fca671/what_has_always_been_your_fun_fact_when_asked/', reddit)
+        self.commentTree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
+        self.submisUrl = 'https://www.reddit.com/r/AskReddit/comments/fca671/what_has_always_been_your_fun_fact_when_asked/'
+        threading.Thread(target=self.showComments).start()
     
     def showComments(self):
         self.newTree = ttk.Treeview(self)
@@ -88,8 +86,7 @@ def main():
                          )
     
     root = tk.Tk()
-    queue = CommentsQueue()
-    ctd = CommentTreeDisplay(root, reddit, queue)
+    ctd = CommentTreeDisplay(root, reddit)
     ctd.pack(fill=tk.BOTH, expand = True)
     
     root.mainloop()

@@ -34,13 +34,15 @@ class ResponseCommentTreeDisplay(CommentTreeDisplay):
     def addComment(self, event):
         ''' Ask user for a reply to double clicked comment '''
         # Get comment ID based on its ID in the tree
-        item = self.commentTree.selection()[0]
-        comment = self.reddit.comment(id = item)
         try:
+            item = self.commentTree.selection()[0]
+            comment = self.reddit.comment(id = item)
             reply = simpledialog.askstring(title = "Add comment", prompt = "Type your comment below:")
-            comment.reply(reply)
-        except:
-            print("Empty string detected!")
+            try:
+                comment.reply(reply)
+            except:
+                print("Empty string detected!")
+        except: pass
 
 
 def main():

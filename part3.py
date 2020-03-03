@@ -48,7 +48,7 @@ def main():
                          )
     
     root = tk.Tk()
-    root.attributes('-zoomed', True)
+    root.geometry('1280x720')
     ctd = ResponseCommentTreeDisplay(root, reddit)
     ctd.pack(fill=tk.BOTH, expand = True)
     

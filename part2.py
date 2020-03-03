@@ -92,7 +92,7 @@ def main():
                          )
     
     root = tk.Tk()
-    root.attributes('-zoomed', True)
+    root.geometry('1280x720')
     ctd = CommentTreeDisplay(root, reddit)
     ctd.pack(fill=tk.BOTH, expand = True)
     

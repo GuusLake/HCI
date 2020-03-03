@@ -54,7 +54,7 @@ class IncomingSubmissions(tk.Frame):
         self.tree.configure(yscrollcommand=self.yscrollbar.set)
         self.yscrollbar.grid(row=0, column=2, sticky='nse')
         self.tree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
-        self.tree.bind("<Double-1>", self.addCommentPage)
+        self.tree.bind("<Double-1>", self.addNewPage)
         
         
         # Time slider and play/pause

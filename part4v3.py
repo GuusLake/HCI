@@ -97,6 +97,7 @@ def main():
                          )
     
     root = tk.Tk()
+    root.geometry('1280x720')
     update_queue = MyQueue(1, False, False)
     updater = UpdateChecker(reddit, update_queue)
     ctd = UpdatedTreeDisplay(root, reddit, update_queue, updater)

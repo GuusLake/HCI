@@ -26,13 +26,17 @@ class UpdateChecker:
     def updateLoop(self):
         while True:
             try:
-                self.old_comments = comment_queue.getNextItem()
+                [self.url, self.old_comments] = comment_queue.getNextItem()
+                print("Got from queue: ")
+                print(self.url, self.old_comments)
             except: pass
             
-            submission = self.reddit.submission(url=self.submisUrl)
-            new_comments = submission.num_comments
-            if self.old_comments < new_comments:
-                update_queue.sendItem(True)
+            try:
+                submission = self.reddit.submission(url=self.url)
+                new_comments = submission.num_comments
+                if self.old_comments < new_comments:
+                    update_queue.sendItem(True)
+            except: pass
             time.sleep(0.100)
 
 
@@ -51,30 +55,34 @@ class MyQueue:
 
 
 class UpdatedTreeDisplay(ResponseCommentTreeDisplay):
-    def __init__(self, parent, reddit, comment_queue, update_queue):
+    def __init__(self, parent, reddit):
         ResponseCommentTreeDisplay.__init__(self, parent, reddit)
         self.reddit = reddit
-        self.comment_queue = comment_queue
-        self.update_queue = update_queue
-        self.after(100, self.checkUpdate)
+        threading.Thread(target=self.checkUpdate).start()
+        print("Post Thread init")
         
     def loadComments(self):
         self.submisUrl = self.urlEntry.get()
         try:
             self.submission = self.reddit.submission(url=self.submisUrl)
-            self.comment_queue.sendItem(self.submission.num_comments)
             threading.Thread(target=self.showComments).start()
         except:
             messagebox.showerror('Error', 'THe URL was invalid')
         self.win.destroy()
     
     def checkUpdate(self):
-        try:
-            if self.update_queue.getNextItem() == True:
-                self.loadComments()
-                print("Updating!")
-        except: pass
-        self.after(100, self.checkUpdate)
+        while True:
+            try:
+                new_comments = self.reddit.submission(url=self.submisUrl).num_comments
+                print("New Comments:")
+                print(new_comments)
+                print("Old Comments:")
+                print(self.submission.num_comments)
+                if self.submission.num_comments < new_comments:
+                    self.submission = self.reddit.submission(url=self.submisUrl)
+                    threading.Thread(target=self.showComments).start()
+            except: pass
+            time.sleep(0.1)
         
 def main():
     reddit = praw.Reddit(client_id='DgNtrLuFrdzL5Q',
@@ -85,10 +93,10 @@ def main():
                          )
     
     root = tk.Tk()
-    comment_queue = MyQueue(1, False, False)
-    update_queue = MyQueue(1, False, False)
-    checker = UpdateChecker(reddit, comment_queue, update_queue)
-    ctd = UpdatedTreeDisplay(root, reddit, comment_queue, update_queue)
+    #comment_queue = MyQueue(1, False, False)
+    #update_queue = MyQueue(1, False, False)
+    #checker = UpdateChecker(reddit, comment_queue, update_queue)
+    ctd = UpdatedTreeDisplay(root, reddit)
     ctd.pack(fill=tk.BOTH, expand = True)
     
     root.mainloop()

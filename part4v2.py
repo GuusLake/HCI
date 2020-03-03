@@ -93,6 +93,7 @@ def main():
                          )
     
     root = tk.Tk()
+    root.geometry('1280x720')
     #comment_queue = MyQueue(1, False, False)
     #update_queue = MyQueue(1, False, False)
     #checker = UpdateChecker(reddit, comment_queue, update_queue)

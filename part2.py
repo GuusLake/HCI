@@ -19,6 +19,7 @@ class CommentTreeDisplay(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.reddit = reddit
         self.columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
         
         # Make menubar
         self.menubar = tk.Menu(self)
@@ -91,6 +92,7 @@ def main():
                          )
     
     root = tk.Tk()
+    root.attributes('-zoomed', True)
     ctd = CommentTreeDisplay(root, reddit)
     ctd.pack(fill=tk.BOTH, expand = True)
     

@@ -7,6 +7,7 @@ import praw
 import tkinter as tk
 from tkinter import ttk
 from tkinter import simpledialog
+from tkinter import messagebox
 import time
 import queue
 import threading
@@ -58,6 +59,14 @@ class IncomingSubmissions(tk.Frame):
         self.tree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
         self.tree.bind("<Double-1>", self.addNewPage)
         
+                
+        # Make menubar
+        self.menubar = tk.Menu(self)
+        self.filemenu = tk.Menu(self.menubar, tearoff=0)
+        self.filemenu.add_command(label="Load comments", command=self.loadCommentsPopup)
+        self.filemenu.add_command(label="exit", command=parent.quit)
+        self.menubar.add_cascade(label="File", menu=self.filemenu)
+        parent.config(menu=self.menubar)
         
         # Time slider and play/pause
         self.paused = False
@@ -157,8 +166,27 @@ class IncomingSubmissions(tk.Frame):
     def addNewPage(self, event):
         item = self.tree.selection()[0]
         submission = self.reddit.submission(id = item)
-        comments = CommentTreeDisplay(self.parent, self.reddit, submission.url)
+        comments = ResponseCommentTreeDisplay(self.parent, self.reddit, submission.url)
         self.notebook.add(comments, text=submission.fullname)
+        
+    def loadCommentsPopup(self):
+        self.win= tk.Toplevel(self)
+        self.label=tk.Label(self.win, text="Enter an URL")
+        self.label.pack()
+        self.urlEntry=tk.Entry(self.win)
+        self.urlEntry.pack()
+        self.btn=tk.Button(self.win,text='Load comments',command=self.loadComments)
+        self.btn.pack()
+    
+    def loadComments(self):
+        self.submisUrl = self.urlEntry.get()
+        try:
+            submission = self.reddit.submission(url=self.submisUrl)
+            comments = ResponseCommentTreeDisplay(self.parent, self.reddit, self.submisUrl)
+            self.notebook.add(comments, text=submission.fullname)
+        except:
+            messagebox.showerror('Error', 'THe URL was invalid')
+        self.win.destroy()
     
 class CommentTreeDisplay(tk.Frame):
     def __init__(self, parent, reddit, url):
@@ -166,14 +194,6 @@ class CommentTreeDisplay(tk.Frame):
         self.reddit = reddit
         self.columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        
-        # Make menubar
-        self.menubar = tk.Menu(self)
-        self.filemenu = tk.Menu(self.menubar, tearoff=0)
-        self.filemenu.add_command(label="Load comments", command=self.loadCommentsPopup)
-        self.filemenu.add_command(label="exit", command=parent.quit)
-        self.menubar.add_cascade(label="File", menu=self.filemenu)
-        parent.config(menu=self.menubar)
         
         # Create comment tree
         self.commentTree = ttk.Treeview(self)
@@ -211,28 +231,10 @@ class CommentTreeDisplay(tk.Frame):
             except:
                 self.newTree.insert(parent_id, 'end', child.id, text="CHARACTER ERROR")
             self.recursiveTreeBuilder(child, child.id)
-            
-    def loadCommentsPopup(self):
-        self.win= tk.Toplevel(self)
-        self.label=tk.Label(self.win, text="Enter an URL")
-        self.label.pack()
-        self.urlEntry=tk.Entry(self.win)
-        self.urlEntry.pack()
-        self.btn=tk.Button(self.win,text='Load comments',command=self.loadComments)
-        self.btn.pack()
-    
-    def loadComments(self):
-        self.submisUrl = self.urlEntry.get()
-        try:
-            submission = self.reddit.submission(url=self.submisUrl)
-            threading.Thread(target=self.showComments).start()
-        except:
-            messagebox.showerror('Error', 'THe URL was invalid')
-        self.win.destroy()
     
 class ResponseCommentTreeDisplay(CommentTreeDisplay):
-    def __init__(self, parent, reddit, submission_id):
-        CommentTreeDisplay.__init__(self, parent, reddit)
+    def __init__(self, parent, reddit, url):
+        CommentTreeDisplay.__init__(self, parent, reddit, url)
         self.reddit = reddit
         print("Init complete")
         

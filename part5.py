@@ -11,7 +11,7 @@ import time
 import queue
 import threading
             
-    class RedditStream:
+class RedditStream:
     def __init__(self, sub, reddit, q):
         self.subreddit = reddit.subreddit(sub)
         self.queue = q
@@ -23,7 +23,7 @@ import threading
             for submission in self.subreddit.new(limit=1):
                 if submission.fullname != self.lastsubmission:
                     self.lastsubmission = submission.fullname
-                    self.queue.sendItem([submission.title, submission.subreddit.display_name])
+                    self.queue.sendItem([submission.title, submission.subreddit.display_name, submission.id])
             time.sleep(0.001)
 
 class SubmissionQueue:
@@ -86,15 +86,15 @@ class IncomingSubmissions(tk.Frame):
             # print("Checking queue...")
             try:
                 # Do something with submissions, add them into treeview
-                [title, subreddit] = self.queue.getNextItem()
+                [title, subreddit, id] = self.queue.getNextItem()
                 if self.wbList:
                     if (self.listType == 'Whitelist'):
                         if (subreddit in self.wbList):
-                            self.tree.insert('', 'end', text=title,values=(subreddit))
+                            self.tree.insert('', 'end', id, text=title,values=(subreddit))
                             self.tree.yview_moveto(1)
                     else:
                         if (subreddit not in self.wbList):
-                            self.tree.insert('', 'end', text=title,values=(subreddit))
+                            self.tree.insert('', 'end', id, text=title,values=(subreddit))
                             self.tree.yview_moveto(1)
                 else:
                     self.tree.insert('', 'end', text=title,values=(subreddit))

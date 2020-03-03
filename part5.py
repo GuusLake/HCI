@@ -264,7 +264,7 @@ def main():
                          )
     
     root = tk.Tk()
-    root.attributes('-zoomed', True)
+    root.geometry('1280x720')
     
     queue = SubmissionQueue()
     prod = RedditStream('all', reddit, queue)

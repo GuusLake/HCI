@@ -19,7 +19,6 @@ class ResponseCommentTreeDisplay(CommentTreeDisplay):
     def __init__(self, parent, reddit):
         CommentTreeDisplay.__init__(self, parent, reddit)
         self.reddit = reddit
-        print("Init complete")
 
     def attachTree(self):
         ''' After a new tree is built, replaces the old comment tree with the new one '''

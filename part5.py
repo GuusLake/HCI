@@ -59,12 +59,12 @@ class IncomingSubmissions(tk.Frame):
         self.tree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
         self.tree.bind("<Double-1>", self.addNewPage)
         
-                
         # Make menubar
         self.menubar = tk.Menu(self)
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(label="Load comments", command=self.loadCommentsPopup)
-        self.filemenu.add_command(label="exit", command=parent.quit)
+        self.filemenu.add_command(label="Close current tab", command=self.closeTab)
+        self.filemenu.add_command(label="exit", command=self.parent.destroy)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
         parent.config(menu=self.menubar)
         
@@ -187,6 +187,9 @@ class IncomingSubmissions(tk.Frame):
         except:
             messagebox.showerror('Error', 'THe URL was invalid')
         self.win.destroy()
+        
+    def closeTab(self):
+        self.notebook.forget(self.notebook.select())
     
 class CommentTreeDisplay(tk.Frame):
     def __init__(self, parent, reddit, url):

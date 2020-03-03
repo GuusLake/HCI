@@ -15,7 +15,7 @@ import queue
 
 
 class RedditStream:
-    ''' threading class to get new submissions '''
+    ''' Threading class to get new submissions '''
     def __init__(self, sub, reddit, q):
         self.subreddit = reddit.subreddit(sub)
         self.queue = q
@@ -23,7 +23,7 @@ class RedditStream:
         self.lastsubmission = None
 
     def redditLoop(self):
-        ''' loop which checks for new submissions '''
+        ''' Loop which checks for new submissions '''
         while True:
             for submission in self.subreddit.new(limit=1):
                 # if the submission is not the same as the last new submission
@@ -34,22 +34,22 @@ class RedditStream:
             time.sleep(0.001)
 
 class SubmissionQueue:
-    ''' queue class to transfer new submission data between threads '''
+    ''' Queue class to transfer new submission data between threads '''
     def __init__(self, maxsize =100):
         self.myqueue=queue.Queue(maxsize)
 
     def sendItem(self,item):
-        ''' add item to queue '''
+        ''' Add item to queue '''
         self.myqueue.put(item, block=True)
 
     def getNextItem(self):
-        ''' get item from queue '''
+        ''' Get item from queue '''
         message=self.myqueue.get(block=False)
         return message
 
 
 class IncomingSubmissions(tk.Frame):
-    ''' main interface class for the reddit submission stream '''
+    ''' Main interface class for the reddit submission stream '''
     def __init__(self, parent, reddit, q):
         tk.Frame.__init__(self, parent)
 
@@ -89,7 +89,7 @@ class IncomingSubmissions(tk.Frame):
         self.after(self.time_slider.get()*100, self.checkQueue)
 
     def checkQueue(self):
-        ''' recieves items from queue and adds them to treeview '''
+        ''' Recieves items from queue and adds them to treeview '''
         if not self.paused: # check for pause status
             try:
                 # Do something with submissions, add them into treeview
@@ -111,7 +111,7 @@ class IncomingSubmissions(tk.Frame):
         self.after(self.time_slider.get()*100, self.checkQueue)
 
     def pause(self):
-        ''' pauses checking queue for new submissions '''
+        ''' Pauses checking queue for new submissions '''
         if self.paused:
             self.paused = False
             self.buttonPause.config(text='Pause')
@@ -120,18 +120,18 @@ class IncomingSubmissions(tk.Frame):
             self.buttonPause.config(text='Resume')
 
     def changeListType(self):
-        ''' change whitelist to blacklist and vice versa '''
+        ''' Changes whitelist to blacklist and vice versa '''
         if (self.listType == 'Whitelist'):
             self.buttonListType.config(text='Blacklist')
         else:
             self.buttonListType.config(text='Whitelist')
 
     def changeListStart(self):
-        ''' start white/blacklist update '''
+        ''' Starts white/blacklist update '''
         threading.Thread(target=self.changeList).start()
 
     def changeList(self):
-        ''' updates white/blacklist '''
+        ''' Updates white/blacklist '''
         if self.listString.get():
             self.wbListTest = self.listString.get().split(', ')
             if (self.checkSubreddits(self.wbListTest)):

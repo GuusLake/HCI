@@ -2,7 +2,7 @@
 # File name: part1.py
 # 
 # Authors: Lakeman, G (s3383180) and Algra, N (s3133125)
-# Date: 26-02-20
+# Date: 03-03-20
 
 import praw
 import tkinter as tk
@@ -13,37 +13,46 @@ import time
 import threading
 import queue
 
+
 class RedditStream:
+    ''' threading class to get new submissions '''
     def __init__(self, sub, reddit, q):
         self.subreddit = reddit.subreddit(sub)
         self.queue = q
         threading.Thread(target=self.redditLoop).start()
         self.lastsubmission = None
-    
+
     def redditLoop(self):
+        ''' loop which checks for new submissions '''
         while True:
             for submission in self.subreddit.new(limit=1):
+                # if the submission is not the same as the last new submission
                 if submission.fullname != self.lastsubmission:
                     self.lastsubmission = submission.fullname
+                    # send the title, subreddit, and id to queue
                     self.queue.sendItem([submission.title, submission.subreddit.display_name, submission.id])
             time.sleep(0.001)
 
 class SubmissionQueue:
+    ''' queue class to transfer new submission data between threads '''
     def __init__(self, maxsize =100):
         self.myqueue=queue.Queue(maxsize)
 
     def sendItem(self,item):
+        ''' add item to queue '''
         self.myqueue.put(item, block=True)
 
     def getNextItem(self):
+        ''' get item from queue '''
         message=self.myqueue.get(block=False)
         return message
 
 
 class IncomingSubmissions(tk.Frame):
+    ''' main interface class for the reddit submission stream '''
     def __init__(self, parent, reddit, q):
         tk.Frame.__init__(self, parent)
-        
+
         # Tree
         self.columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -56,8 +65,7 @@ class IncomingSubmissions(tk.Frame):
         self.tree.configure(yscrollcommand=self.yscrollbar.set)
         self.yscrollbar.grid(row=0, column=2, sticky='nse')
         self.tree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
-        
-        
+
         # Time slider and play/pause
         self.paused = False
         self.time_slider = tk.Scale(self, from_=1, to=100, orient='horizontal', label='Select time between posts in 0.1 seconds')
@@ -65,7 +73,7 @@ class IncomingSubmissions(tk.Frame):
         self.time_slider.grid(column=0, row=1, columnspan=2, sticky = tk.NSEW)
         self.buttonPause = tk.Button(self, text = "Pause", command = self.pause)
         self.buttonPause.grid(column=2, row=1, sticky = 'sew')
-        
+
         # White/Blacklist
         self.wbList = []
         self.listType = 'Whitelist'
@@ -77,14 +85,12 @@ class IncomingSubmissions(tk.Frame):
         self.buttonListType.grid(column=1, row=2, sticky = 'sew')
         self.buttonListSubmit = tk.Button(self, text = "Submit", command = self.changeListStart)
         self.buttonListSubmit.grid(column=2, row=2, sticky = 'sew')
-        
-        
-        
+
         self.after(self.time_slider.get()*100, self.checkQueue)
-    
+
     def checkQueue(self):
-        if not self.paused:
-            # print("Checking queue...")
+        ''' recieves items from queue and adds them to treeview '''
+        if not self.paused: # check for pause status
             try:
                 # Do something with submissions, add them into treeview
                 [title, subreddit, id] = self.queue.getNextItem()
@@ -100,28 +106,32 @@ class IncomingSubmissions(tk.Frame):
                 else:
                     self.tree.insert('', 'end', text=title,values=(subreddit))
                     self.tree.yview_moveto(1)
-                    
+
             except: pass
         self.after(self.time_slider.get()*100, self.checkQueue)
-        
+
     def pause(self):
+        ''' pauses checking queue for new submissions '''
         if self.paused:
             self.paused = False
             self.buttonPause.config(text='Pause')
         else:
             self.paused = True
             self.buttonPause.config(text='Resume')
-            
+
     def changeListType(self):
+        ''' change whitelist to blacklist and vice versa '''
         if (self.listType == 'Whitelist'):
             self.buttonListType.config(text='Blacklist')
         else:
             self.buttonListType.config(text='Whitelist')
-            
+
     def changeListStart(self):
+        ''' start white/blacklist update '''
         threading.Thread(target=self.changeList).start()
-            
+
     def changeList(self):
+        ''' updates white/blacklist '''
         if self.listString.get():
             self.wbListTest = self.listString.get().split(', ')
             if (self.checkSubreddits(self.wbListTest)):
@@ -129,8 +139,8 @@ class IncomingSubmissions(tk.Frame):
                 self.listType = self.buttonListType['text']
         else:
             self.wbList = []
-        
-            
+
+
     def checkSubreddits(self, subredditList):
         '''
         Checks if the subreddits in the black or whitelist exist
@@ -154,27 +164,26 @@ class IncomingSubmissions(tk.Frame):
                 messagebox.showerror('Error', '{0} does not exist\nThe old '.format(subreddit))
                 return False
         return True
-        
+
 
 def main():
-    
     reddit = praw.Reddit(client_id='DgNtrLuFrdzL5Q',
                          client_secret='CJZQjr6En6GpsYOEFVPdWAwwW7w',
                          user_agent='Part1 by /u/guusnick',
                          username = 'guusnick',
                          password = 'Groningen2020'
                          )
-    
+
     root = tk.Tk()
     root.geometry('1280x720')
-    
+
     queue = SubmissionQueue()
     prod = RedditStream('all', reddit, queue)
     inc_subm = IncomingSubmissions(root, reddit, queue)
     inc_subm.pack(fill=tk.BOTH, expand = True)
-    
+
     root.mainloop()
-    
+
 
 if __name__ == "__main__":
     main()

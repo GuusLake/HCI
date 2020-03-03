@@ -39,7 +39,7 @@ class SubmissionQueue:
 
 
 class IncomingSubmissions(tk.Frame):
-    def __init__(self, parent, reddit, q):
+    def __init__(self, parent, reddit, q, n):
         tk.Frame.__init__(self, parent)
         
         # Tree
@@ -47,6 +47,8 @@ class IncomingSubmissions(tk.Frame):
         self.grid_rowconfigure(0, weight=1)
         self.reddit = reddit
         self.queue = q
+        self.notebook = n
+        self.parent = parent
         self.tree = ttk.Treeview(self, columns=('Subreddit'))
         self.tree.heading("#0", text="Title")
         self.tree.heading("Subreddit", text="Subreddit")
@@ -129,7 +131,6 @@ class IncomingSubmissions(tk.Frame):
         else:
             self.wbList = []
         
-            
     def checkSubreddits(self, subredditList):
         '''
         Checks if the subreddits in the black or whitelist exist
@@ -152,9 +153,15 @@ class IncomingSubmissions(tk.Frame):
                 messagebox.showerror('Error', '{0} does not exist\nThe old '.format(subreddit))
                 return False
         return True
+        
+    def addNewPage(self, event):
+        item = self.tree.selection()[0]
+        submission = self.reddit.submission(id = item)
+        comments = CommentTreeDisplay(self.parent, self.reddit, submission.url)
+        self.notebook.add(comments, text=submission.fullname)
     
 class CommentTreeDisplay(tk.Frame):
-    def __init__(self, parent, reddit):
+    def __init__(self, parent, reddit, url):
         tk.Frame.__init__(self, parent)
         self.reddit = reddit
         self.columnconfigure(0, weight=1)
@@ -164,7 +171,7 @@ class CommentTreeDisplay(tk.Frame):
         self.menubar = tk.Menu(self)
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(label="Load comments", command=self.loadCommentsPopup)
-        self.filemenu.add_command(label="exit", command=self.quit)
+        self.filemenu.add_command(label="exit", command=parent.quit)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
         parent.config(menu=self.menubar)
         
@@ -174,7 +181,9 @@ class CommentTreeDisplay(tk.Frame):
         self.commentTree.configure(yscrollcommand=self.yscrollbarComment.set)
         self.yscrollbarComment.grid(row=0, column=0, sticky='nse')
         self.commentTree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
-        self.submisUrl = ''
+        print(url)
+        self.submisUrl = url
+        self.showComments()
     
     def showComments(self):
         self.newTree = ttk.Treeview(self)
@@ -259,12 +268,10 @@ def main():
     
     queue = SubmissionQueue()
     prod = RedditStream('all', reddit, queue)
-    inc_subm = IncomingSubmissions(root, reddit, queue)
-    test = ResponseCommentTreeDisplay(root, reddit)
-    inc_subm.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
     n = ttk.Notebook(root)
     n.pack(side=tk.RIGHT, fill=tk.BOTH, expand=1)
-    n.add(test, text='test')
+    inc_subm = IncomingSubmissions(root, reddit, queue, n)
+    inc_subm.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
     
     
     root.mainloop()

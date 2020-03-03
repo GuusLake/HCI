@@ -73,7 +73,8 @@ class IncomingSubmissions(tk.Frame):
         self.menubar = tk.Menu(self)
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(label="Load comments", command=self.loadCommentsPopup)
-        self.filemenu.add_command(label="exit", command=parent.quit)
+        self.filemenu.add_command(label="Close current tab", command=self.closeTab)
+        self.filemenu.add_command(label="exit", command=self.parent.destroy)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
         parent.config(menu=self.menubar)
 
@@ -178,8 +179,8 @@ class IncomingSubmissions(tk.Frame):
         ''' Makes a new ResponseCommentTreeDisplay and adds it to the notebook '''
         item = self.tree.selection()[0]
         submission = self.reddit.submission(id = item)
-        comments = ResponseCommentTreeDisplay(self.parent, self.reddit, item)
-        self.notebook.add(comments, text=submission.fullname)
+        comments = ResponseCommentTreeDisplay(self.parent, self.reddit, item, 'id')
+        self.notebook.add(comments, text=submission.subreddit)
 
     def loadCommentsPopup(self):
         ''' Shows popup asking for a submission url '''
@@ -197,18 +198,23 @@ class IncomingSubmissions(tk.Frame):
         try:
             # Check for valid reddit post
             submission = self.reddit.submission(url=self.submisUrl)
-            comments = ResponseCommentTreeDisplay(self.parent, self.reddit, self.submisUrl)
-            self.notebook.add(comments, text=submission.fullname)
+            comments = ResponseCommentTreeDisplay(self.parent, self.reddit, self.submisUrl, 'url')
+            self.notebook.add(comments, text=submission.subreddit)
         except:
             messagebox.showerror('Error', 'THe URL was invalid')
         self.win.destroy()
 
+    def closeTab(self):
+        ''' Closes notebook tab '''
+        self.notebook.forget(self.notebook.select())
+
 
 class CommentTreeDisplay(tk.Frame):
     ''' An interface to display comments of a reddit submission in a tree '''
-    def __init__(self, parent, reddit, id):
+    def __init__(self, parent, reddit, id, method):
         tk.Frame.__init__(self, parent)
         self.reddit = reddit
+        self.method = method
         self.columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
@@ -224,7 +230,10 @@ class CommentTreeDisplay(tk.Frame):
     def showComments(self):
         ''' Build a tree of comments for the top level comments '''
         self.newTree = ttk.Treeview(self)
-        submission = self.reddit.submission(id=self.submisId)
+        if self.method == 'id':
+            submission = self.reddit.submission(id=self.submisId)
+        else:
+            submission = self.reddit.submission(url=self.submisId)
         submission.comments.replace_more(limit=0)
         for comment in submission.comments:
             try:
@@ -254,8 +263,8 @@ class CommentTreeDisplay(tk.Frame):
 
 class ResponseCommentTreeDisplay(CommentTreeDisplay):
     ''' Subclass of CommentTreeDisplay able to respond to comments '''
-    def __init__(self, parent, reddit, id):
-        CommentTreeDisplay.__init__(self, parent, reddit, id)
+    def __init__(self, parent, reddit, id, method):
+        CommentTreeDisplay.__init__(self, parent, reddit, id, method)
         self.reddit = reddit
 
     def attachTree(self):

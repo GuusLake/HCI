@@ -108,7 +108,7 @@ class IncomingSubmissions(tk.Frame):
                             self.tree.insert('', 'end', id, text=title,values=(subreddit))
                             self.tree.yview_moveto(1)
                 else:
-                    self.tree.insert('', 'end', text=title,values=(subreddit))
+                    self.tree.insert('', 'end', id, text=title,values=(subreddit))
                     self.tree.yview_moveto(1)
                     
             except: pass
@@ -166,7 +166,7 @@ class IncomingSubmissions(tk.Frame):
     def addNewPage(self, event):
         item = self.tree.selection()[0]
         submission = self.reddit.submission(id = item)
-        comments = ResponseCommentTreeDisplay(self.parent, self.reddit, submission.url)
+        comments = ResponseCommentTreeDisplay(self.parent, self.reddit, item)
         self.notebook.add(comments, text=submission.fullname)
         
     def loadCommentsPopup(self):
@@ -189,7 +189,7 @@ class IncomingSubmissions(tk.Frame):
         self.win.destroy()
     
 class CommentTreeDisplay(tk.Frame):
-    def __init__(self, parent, reddit, url):
+    def __init__(self, parent, reddit, id):
         tk.Frame.__init__(self, parent)
         self.reddit = reddit
         self.columnconfigure(0, weight=1)
@@ -201,13 +201,13 @@ class CommentTreeDisplay(tk.Frame):
         self.commentTree.configure(yscrollcommand=self.yscrollbarComment.set)
         self.yscrollbarComment.grid(row=0, column=0, sticky='nse')
         self.commentTree.grid(column=0, row=0, columnspan=3, sticky=tk.NSEW)
-        print(url)
-        self.submisUrl = url
+        print(id)
+        self.submisId = id
         self.showComments()
     
     def showComments(self):
         self.newTree = ttk.Treeview(self)
-        submission = self.reddit.submission(url=self.submisUrl)
+        submission = self.reddit.submission(id=self.submisId)
         submission.comments.replace_more(limit=0)
         for comment in submission.comments:
             try:
@@ -233,8 +233,8 @@ class CommentTreeDisplay(tk.Frame):
             self.recursiveTreeBuilder(child, child.id)
     
 class ResponseCommentTreeDisplay(CommentTreeDisplay):
-    def __init__(self, parent, reddit, url):
-        CommentTreeDisplay.__init__(self, parent, reddit, url)
+    def __init__(self, parent, reddit, id):
+        CommentTreeDisplay.__init__(self, parent, reddit, id)
         self.reddit = reddit
         print("Init complete")
         
@@ -249,13 +249,15 @@ class ResponseCommentTreeDisplay(CommentTreeDisplay):
     
     def addComment(self, event):
         print("Double Click Detected")
-        item = self.commentTree.selection()[0]
-        comment = self.reddit.comment(id = item)
         try:
+            item = self.commentTree.selection()[0]
+            comment = self.reddit.comment(id = item)
             reply = simpledialog.askstring(title = "Add comment", prompt = "Type your comment below:")
-            comment.reply(reply)
-        except:
-            print("Empty string detected!")
+            try:
+                comment.reply(reply)
+            except:
+                print("Empty string detected!")
+        except: pass
     
 def main():
     reddit = praw.Reddit(client_id='DgNtrLuFrdzL5Q',

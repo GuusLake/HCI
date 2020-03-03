@@ -104,7 +104,7 @@ class IncomingSubmissions(tk.Frame):
                             self.tree.insert('', 'end', id, text=title,values=(subreddit))
                             self.tree.yview_moveto(1)
                 else:
-                    self.tree.insert('', 'end', text=title,values=(subreddit))
+                    self.tree.insert('', 'end', id, text=title,values=(subreddit))
                     self.tree.yview_moveto(1)
 
             except: pass

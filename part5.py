@@ -167,7 +167,7 @@ class IncomingSubmissions(tk.Frame):
         item = self.tree.selection()[0]
         submission = self.reddit.submission(id = item)
         comments = ResponseCommentTreeDisplay(self.parent, self.reddit, item)
-        self.notebook.add(comments, text=submission.fullname)
+        self.notebook.add(comments, text=submission.subreddit)
         
     def loadCommentsPopup(self):
         self.win= tk.Toplevel(self)
@@ -183,7 +183,7 @@ class IncomingSubmissions(tk.Frame):
         try:
             submission = self.reddit.submission(url=self.submisUrl)
             comments = ResponseCommentTreeDisplay(self.parent, self.reddit, self.submisUrl)
-            self.notebook.add(comments, text=submission.fullname)
+            self.notebook.add(comments, text=submission.subreddit)
         except:
             messagebox.showerror('Error', 'THe URL was invalid')
         self.win.destroy()
